@@ -27,8 +27,6 @@ plotly.offline.init_notebook_mode()
 import plotly.graph_objs as go
 from plotly.graph_objs import *
 
-import colorsys
-
 # builds eta vector without using the gradient method
 # apd_file [ATTENTION, HOST, IMPRESSIONS]
 # relevancy_file [RELEVANCY, HOST]
@@ -37,7 +35,9 @@ import colorsys
 
 class iab():
     def __init__(self, apd_file='domain_apd.csv', iab_dict='iab_list.csv', graph = False, kf = 'NAME'):
-        self.coef = 0.0
+        
+        # correlation coefficient of impressions to apd
+        self.apd_imp_coef = 0.0
         
         # load CSV files into Pandas DataFrames
         apd = pd.read_csv(apd_file)
@@ -56,7 +56,7 @@ class iab():
         # get mean impressions by IAB category
         iab_impressions = df_merge.groupby(kf).IMPRESSIONS.mean().to_dict()
     
-        # move calculated columns into separate arrays
+        # move calculated columns into separate arrays for graphing
         names = []
         apd = []
         impressions = []
@@ -68,7 +68,7 @@ class iab():
             impressions.append(val)
             
         # calculate correlation coefficient for impressions + apd
-        self.coef = np.corrcoef(impressions,apd)[1,0]
+        self.apd_imp_coef = np.corrcoef(impressions,apd)[1,0]
             
         # graph using Plotly
         if graph:
@@ -114,17 +114,19 @@ class iab():
         traces.append(trace)     
 
         # format the graph domain
+        # Plotly doesn't easily allow us to add multiple graphs to a single page,
+        # so we have to specify what regions each graph will be in
         layout = go.Layout(height = 900,
                            width = 1200,
                            autosize = True,
                            title = 'IAB Category Distribution',
                            xaxis = dict(
                               nticks = 14,
-                              domain = [.0, 1]
+                              domain = [.0, 1] # entire width of page
                             ),
                             yaxis = dict(
                               scaleanchor = "x",
-                              domain = [.0, .5],
+                              domain = [.0, .5], # top half page
                               title = "Time Spent on Page (MS)"
                             ),
                             paper_bgcolor='black',
@@ -157,7 +159,7 @@ class iab():
         plotly.offline.plot(fig, filename="iab_metrics.html") 
         
 class simple_eta():
-    def __init__(self, apd_file = 'iab1_attention.csv', relevancy_file = 'iab1_relevancy.csv', graph = True, kf = 'HOST'):
+    def __init__(self, apd_file = 'iab2_attention.csv', relevancy_file = 'iab2_relevancy.csv', graph = True, kf = 'HOST'):
         self.vectors = dict()
         print("Loading CSV data...")
         apd = pd.read_csv(apd_file)
