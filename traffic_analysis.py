@@ -27,11 +27,14 @@ plotly.offline.init_notebook_mode()
 import plotly.graph_objs as go
 from plotly.graph_objs import *
 
-# builds eta vector without using the gradient method
-# apd_file [ATTENTION, HOST, IMPRESSIONS]
-# relevancy_file [RELEVANCY, HOST]
-# graph [True/False]
-# kf: key feature column name
+"""
+Plots aggregate IAB data to pie and bar chart
+bar chart = APD by category, pie chart = % of network impressions
+apd_file headers [ATTENTION, HOST, IMPRESSIONS]
+relevancy_file headers[RELEVANCY, HOST]
+graph [True/False]
+kf: key feature column name
+"""
 
 class iab():
     def __init__(self, apd_file='domain_apd.csv', iab_dict='iab_list.csv', graph = False, kf = 'NAME'):
@@ -43,7 +46,7 @@ class iab():
         apd = pd.read_csv(apd_file)
         iab = pd.read_csv(iab_dict)
         
-        # merge both files
+        # merge both dataframe files
         df_merge = pd.merge(apd, iab, how='right')
         
         # remove NaN (empty) rows
@@ -156,9 +159,11 @@ class iab():
         fig = go.Figure(data = traces, layout = layout)
         
         # save graph to html file
-        plotly.offline.plot(fig, filename="iab_metrics.html") 
+        plotly.offline.plot(fig, filename="iab_metrics.html")
         
-class simple_eta():
+""" Plot single IAB category data to pie chart """
+     
+class simple_iab_pie():
     def __init__(self, apd_file = 'iab2_attention.csv', relevancy_file = 'iab2_relevancy.csv', graph = True, kf = 'HOST'):
         self.vectors = dict()
         print("Loading CSV data...")
@@ -168,7 +173,7 @@ class simple_eta():
         # active page dwell min/max
         apd_min, apd_max = apd.ATTENTION.min(), apd.ATTENTION.max()
         
-        # merge rank and relevancy data
+        # merge rank and relevancy dataframes
         df_merge = pd.merge(relevancy, apd, how='left')
         
         # drop publishers with no impressions (possibly outside of network)
@@ -214,10 +219,12 @@ class ETA():
     def __init__(self, apd_file = 'apd_count.csv', growth_file = 'top_50_growth.csv', key_feature = 'PUBLISHER', smooth_outliers = 0.05, graph = True):
         self.vectors = dict()
         self.avg = 0.0
-        # calculate gradient change for publisher
+        
+        # load growth data into dataframe
         print("Calculating vector gradients")
         growth_df = pd.read_csv(growth_file)
         
+        # calculate impression percent change by grouping by key_feature
         growth_df['CHANGE'] = growth_df.groupby(key_feature).IMPRESSIONS.pct_change()
         
         # drop NaN values
@@ -353,7 +360,10 @@ class Graph():
             ax.set_ylabel('Attention Demand')
             ax.set_zlabel('Popularity')
             plt.show()
-        
+"""
+Plots daily price data for publisher articles
+"""
+
 class PriceAnalysis():
     
     def __init__(self, file = 'cnn_price_data.csv', days = 7, feature_name = "ARTICLE"):
