@@ -28,17 +28,29 @@ import plotly.graph_objs as go
 from plotly.graph_objs import *
 
 """
-Plots aggregate IAB data to pie and bar chart
-bar chart = APD by category, pie chart = % of network impressions
-apd_file headers [ATTENTION, HOST, IMPRESSIONS]
-relevancy_file headers[RELEVANCY, HOST]
-graph [True/False]
-kf: key feature column name
+class cumulative_iab()
+
+Takes APD file (contains average APD and impressions per publisher) and
+IAB dictionary (category -> ID) files and graphs them into bar and pie charts
+respectively.
+
+apd_file: APD and impression data CSV
+iab_dict: dictionary of URL -> IAB ID -> IAB Name
+graph: True/False
+kf: CSV column name to group by (IAB Name by default)
 """
 
+<<<<<<< HEAD
 class iab():
     def __init__(self, apd_file='iab_std_analysis.csv', iab_dict='iab_list.csv', graph = True, kf = 'NAME'):
         self.coef = 0.0
+=======
+class cumulative_iab():
+    def __init__(self, apd_file='domain_apd.csv', iab_dict='iab_list.csv', graph = False, kf = 'NAME'):
+        
+        # correlation coefficient of impressions to apd
+        self.apd_imp_coef = 0.0
+>>>>>>> origin/master
         
         # load CSV files into Pandas DataFrames
         apd = pd.read_csv(apd_file)
@@ -81,9 +93,23 @@ class iab():
             
         # graph using Plotly
         if graph:
+<<<<<<< HEAD
             self.chart(names, apd, std_apd, impressions)
             
             
+=======
+            self.chart(names, apd, impressions)
+    
+    """ 
+    function chart
+    
+    Graphs APD and Impression data to Plotly bar and pie chart
+    
+    categories: IAB dictionary
+    apd: active page dwell array
+    impressions: impressions array
+    """
+>>>>>>> origin/master
         
     def chart(self, categories, apd, std_apd, impressions):
         
@@ -180,7 +206,15 @@ class iab():
         # save graph to html file
         plotly.offline.plot(fig, filename="iab_metrics.html")
         
-""" Plot single IAB category data to pie chart """
+""" 
+class simple_iab_pie
+
+Plot single IAB category data to pie chart
+apd_file: CSV of IAB Impression and APD data
+relevancy_file: CSV of relevancy data
+graph: True/False
+kf: key_feature to group by (HOST URL by default)
+"""
      
 class simple_iab_pie():
     def __init__(self, apd_file = 'iab2_attention.csv', relevancy_file = 'iab2_relevancy.csv', graph = True, kf = 'HOST'):
@@ -234,6 +268,18 @@ class simple_iab_pie():
         return np.log10(abs((value / average)))
         
 # initialize topographic analysis variables using gradient method
+
+"""
+class ETA
+
+Graphs growth gradient and impression data for a given IRL
+apd_file: apd CSV data
+growth_file: impression data by day
+key_feature: CSV header to merge dataframes by (Publisher URL by default)
+smooth_outliers: centers graph against dips in impressions caused by anomalies
+graph: True/False
+
+"""
 class ETA():
     def __init__(self, apd_file = 'apd_count.csv', growth_file = 'top_50_growth.csv', key_feature = 'PUBLISHER', smooth_outliers = 0.05, graph = True):
         self.vectors = dict()
@@ -380,7 +426,13 @@ class Graph():
             ax.set_zlabel('Popularity')
             plt.show()
 """
-Plots daily price data for publisher articles
+class PriceAnalysis
+
+Graphs pricing data over N-day period
+
+file: pricing data by URL
+days: number of days to observe (one week by default)
+feature_name: CSV header name to group by (Article by default)
 """
 
 class PriceAnalysis():
