@@ -40,17 +40,12 @@ graph: True/False
 kf: CSV column name to group by (IAB Name by default)
 """
 
-<<<<<<< HEAD
-class iab():
-    def __init__(self, apd_file='iab_std_analysis.csv', iab_dict='iab_list.csv', graph = True, kf = 'NAME'):
-        self.coef = 0.0
-=======
+
 class cumulative_iab():
-    def __init__(self, apd_file='domain_apd.csv', iab_dict='iab_list.csv', graph = False, kf = 'NAME'):
+    def __init__(self, apd_file='iab_std_analysis.csv', iab_dict='iab_list.csv', graph = True, kf = 'NAME'):
         
         # correlation coefficient of impressions to apd
         self.apd_imp_coef = 0.0
->>>>>>> origin/master
         
         # load CSV files into Pandas DataFrames
         apd = pd.read_csv(apd_file)
@@ -89,16 +84,13 @@ class cumulative_iab():
             impressions.append(val)
             
         # calculate correlation coefficient for impressions + apd
-        self.coef = np.corrcoef(impressions,apd)[1,0]
+        self.coef = np.corrcoef(impressions,std_apd)[1,0]
+        print(self.coef)
             
         # graph using Plotly
         if graph:
-<<<<<<< HEAD
             self.chart(names, apd, std_apd, impressions)
-            
-            
-=======
-            self.chart(names, apd, impressions)
+
     
     """ 
     function chart
@@ -109,7 +101,6 @@ class cumulative_iab():
     apd: active page dwell array
     impressions: impressions array
     """
->>>>>>> origin/master
         
     def chart(self, categories, apd, std_apd, impressions):
         
