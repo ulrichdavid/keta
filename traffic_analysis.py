@@ -37,52 +37,61 @@ kf: key feature column name
 """
 
 class iab():
-    def __init__(self, apd_file='domain_apd.csv', iab_dict='iab_list.csv', graph = False, kf = 'NAME'):
-        
-        # correlation coefficient of impressions to apd
-        self.apd_imp_coef = 0.0
+    def __init__(self, apd_file='iab_std_analysis.csv', iab_dict='iab_list.csv', graph = True, kf = 'NAME'):
+        self.coef = 0.0
         
         # load CSV files into Pandas DataFrames
         apd = pd.read_csv(apd_file)
         iab = pd.read_csv(iab_dict)
         
-        # merge both dataframe files
+        # merge both files
         df_merge = pd.merge(apd, iab, how='right')
         
         # remove NaN (empty) rows
-        df_merge = df_merge[np.isfinite(df_merge['APD'])]
+        df_merge = df_merge[np.isfinite(df_merge['ATTENTION'])]
         df_merge = df_merge[np.isfinite(df_merge['IMPRESSIONS'])]
+        df_merge = df_merge[np.isfinite(df_merge['STD_ATTENTION'])]
                             
         # get mean apd by IAB category
-        iab_apd = df_merge.groupby(kf).APD.mean().to_dict()
+        iab_apd = df_merge.groupby(kf).ATTENTION.mean().to_dict()
+        
+        # get mean std deviation apd by IAB category
+        iab_std_apd = df_merge.groupby(kf).STD_ATTENTION.mean().to_dict()
         
         # get mean impressions by IAB category
         iab_impressions = df_merge.groupby(kf).IMPRESSIONS.mean().to_dict()
     
-        # move calculated columns into separate arrays for graphing
+        # move calculated columns into separate arrays
         names = []
         apd = []
+        std_apd = []
         impressions = []
         for key, val in iab_apd.items():
             names.append(key)
             apd.append(val)
             
+        for key, val in iab_std_apd.items():
+            std_apd.append(val)
+            
         for key, val in iab_impressions.items():
             impressions.append(val)
             
         # calculate correlation coefficient for impressions + apd
-        self.apd_imp_coef = np.corrcoef(impressions,apd)[1,0]
+        self.coef = np.corrcoef(impressions,apd)[1,0]
             
         # graph using Plotly
         if graph:
-            self.chart(names, apd, impressions)
+            self.chart(names, apd, std_apd, impressions)
+            
+            
         
-    def chart(self, categories, apd, impressions):
+    def chart(self, categories, apd, std_apd, impressions):
         
         # convert variables into Numpy arrays for plotting
         labels = np.asarray(categories)
         pie_values = np.asarray(impressions)
         bar_values = np.asarray(apd)
+        std_bar_values = np.asarray(std_apd)
         
         # abbreviate categories for better Pie chart appearance
         abbvs = np.asarray(['Business','Home','Entertainment','Family','Hobbies','Auto','Health','Travel','News','Tech','Sports','Politics','Fashion','Food'])
@@ -106,15 +115,24 @@ class iab():
                        )
         traces.append(trace)
         
-        # bar chart data
+        # apd bar chart data
         trace = go.Bar(x = labels,
                        y = bar_values,
                        hoverinfo = 'label+percent',
-                       name='MS',
+                       name='Average',
                        marker=dict(
                         color=c)
                         )
-        traces.append(trace)     
+        traces.append(trace)
+        
+        trace = go.Bar(x = labels,
+                       y = std_bar_values,
+                       hoverinfo = 'label+percent',
+                       name='Standard Deviation',
+                       marker=dict(
+                        color=c)
+                        )
+        traces.append(trace)         
 
         # format the graph domain
         # Plotly doesn't easily allow us to add multiple graphs to a single page,
@@ -123,6 +141,7 @@ class iab():
                            width = 1200,
                            autosize = True,
                            title = 'IAB Category Distribution',
+                           barmode='group',
                            xaxis = dict(
                               nticks = 14,
                               domain = [.0, 1] # entire width of page
