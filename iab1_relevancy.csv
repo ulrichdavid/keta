@@ -1,4 +1,4 @@
-COUNT(DISTINCT REFERER),REFERER_HOST
+RELEVANCY,HOST
 25603,www.closerweekly.com
 13766,loudwire.com
 76868,www.complex.com

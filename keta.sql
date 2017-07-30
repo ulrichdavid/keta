@@ -1,3 +1,38 @@
+-- the 2 queries below are for individual IAB categories
+-- grab stale content count (relevancy) based on May impressions
+SELECT count(*) as relevancy, replace(referer_host,'www.','') as host, iab_id as iab FROM tracker.prod.event
+LEFT JOIN pub_property_iab ON (replace(website_url,'www.','') = replace(referer_host,'www.',''))
+WHERE referer_host IN
+         (SELECT referer_host FROM tracker.prod.event
+         WHERE time_id >= 2017050100 and time_id <= 2017060100
+         // select by IAB category
+         AND replace(referer_host,'www.','') IN
+         (SELECT replace(website_url,'www.','') FROM pub_property_iab
+          WHERE iab_id='IAB1'
+         GROUP BY website_url)
+         AND referer_host != 'unknown'
+         AND referer_host NOT LIKE '%doubleclick.net%'
+         AND referer_host NOT LIKE '%ampproject.net%'
+         GROUP BY referer_host
+         ORDER BY COUNT(*) DESC)
+  AND time_id > 2017010100 and time_id < 2017050100
+  AND referer_host != 'unknown'
+  GROUP BY referer_host, iab_id;
+  
+-- grab articles impressions (ranks) by IAB category
+SELECT COUNT(*) as impressions, referer_host as host FROM tracker.prod.event
+WHERE time_id >= 2017050100 and time_id <= 2017060100
+// select by IAB category
+AND replace(referer_host,'www.','') IN
+(SELECT replace(website_url,'www.','') as ref FROM pub_property_iab
+          WHERE iab_id='IAB2')
+AND referer_host != 'unknown'
+AND referer_host NOT LIKE '%doubleclick.net%'
+AND referer_host NOT LIKE '%ampproject.net%'
+GROUP BY referer_host
+ORDER BY COUNT(*) DESC;
+
+
 -- get average active page dwell and aggregate impressions from top 50 publishers by traffic
 SELECT AVG(m.active_page_dwell) as apd, SQ.referer_host as host, COUNT(*) as impressions FROM
 arion.prod.fact_moat_viewability m

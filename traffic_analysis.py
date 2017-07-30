@@ -207,15 +207,20 @@ graph: True/False
 kf: key_feature to group by (HOST URL by default)
 """
      
-class simple_iab_pie():
-    def __init__(self, apd_file = 'iab2_attention.csv', relevancy_file = 'iab2_relevancy.csv', graph = True, kf = 'HOST'):
+class iab_topography():
+    def __init__(self, apd_file = 'iab1_std_attention.csv', relevancy_file = 'iab1_relevancy.csv', graph = True, kf = 'HOST', use_std_dev = True):
         self.vectors = dict()
         print("Loading CSV data...")
         apd = pd.read_csv(apd_file)
         relevancy = pd.read_csv(relevancy_file)
         
         # active page dwell min/max
-        apd_min, apd_max = apd.ATTENTION.min(), apd.ATTENTION.max()
+        if use_std_dev:
+            attn_key = 'STD_ATTENTION'
+            apd_min, apd_max = apd.STD_ATTENTION.min(), apd.STD_ATTENTION.max()
+        else:
+            attn_key = 'ATTENTION'
+            apd_min, apd_max = apd.ATTENTION.min(), apd.ATTENTION.max()
         
         # merge rank and relevancy dataframes
         df_merge = pd.merge(relevancy, apd, how='left')
@@ -237,7 +242,7 @@ class simple_iab_pie():
             self.vectors[row[1][kf]] = {}
             self.vectors[row[1][kf]].update({"relevancy":self.scale_unity(row[1]['rel_scale'], rel_min, rel_max)})
             self.vectors[row[1][kf]].update({"popularity":self.scale_unity(row[1]['IMPRESSIONS'], articles_min, articles_max)})
-            self.vectors[row[1][kf]].update({"attention":self.scale_unity(row[1]['ATTENTION'], apd_min, apd_max)})
+            self.vectors[row[1][kf]].update({"attention":self.scale_unity(row[1][attn_key], apd_min, apd_max)})
             
             
         print("Vector initialization complete")
