@@ -21,7 +21,7 @@ import plotly.graph_objs as go
 from plotly.graph_objs import *
 
 class keta():
-    def __init__(self, in_file='top_50_in_window.csv', out_file='top_50_out_window.csv', apd_file='top_50_attn_scale.csv', kf='PUBLISHER', attn_key='AVG_APD', graph=True):
+    def __init__(self, in_file='in_window.csv', out_file='out_window.csv', apd_file='attn_stats.csv', kf='PUBLISHER', attn_key='AVG_APD', graph=True):
         self.vectors = dict()
         apd = pd.read_csv(apd_file)
         out_window = pd.read_csv(out_file)
@@ -30,7 +30,7 @@ class keta():
         df = apd.merge(out_window,on='PUBLISHER').merge(in_window,on='PUBLISHER')
         
         # lower "relevancy" numbers are good, so we want to invert the calculation to represent that
-        df['relevancy'] = abs(1 - (df['OUT_WINDOW'] / df['IN_WINDOW']))
+        df['relevancy'] = df['OUT_WINDOW'] / df['IN_WINDOW']
         
         apd_min, apd_max = apd.AVG_APD.min(), apd.AVG_APD.max()
         
@@ -103,20 +103,17 @@ class Graph():
                                 scene = dict(
                                 xaxis = dict(
                                      title="X: RELEVANCY",
-                                     backgroundcolor="rgb(74,200,235)",
-                                     gridcolor="rgb(255, 255, 255)",
+                                     gridcolor="rgb(115, 115, 115)",
                                      showbackground=True,
                                      zerolinecolor="rgb(0,0, 0)",),
                                 yaxis = dict(
                                     title="Y: ATTENTION DEMAND",
-                                    backgroundcolor="rgb(202,238,94)",
-                                    gridcolor="rgb(255, 255, 255)",
+                                    gridcolor="rgb(115, 115, 115)",
                                     showbackground=True,
                                     zerolinecolor="rgb(0,0, 0)"),
                                 zaxis = dict(
                                     title="Z: POPULARITY",
-                                    backgroundcolor="rgb(237,83,175)",
-                                    gridcolor="rgb(255, 255, 255)",
+                                    gridcolor="rgb(115, 115, 115)",
                                     showbackground=True,
                                     zerolinecolor="rgb(0, 0, 0)",),),
                                 width=1000,
